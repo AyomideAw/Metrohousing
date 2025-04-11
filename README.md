@@ -4,14 +4,28 @@ MetroHousing is a full-stack data-driven application designed to visualize and d
 
 # 📦 Tech Stack
 
-Frontend: React.jsBackend: Spring Boot (Java)Database: MySQLData Ingestion: PythonContainerization: Docker, Docker ComposeCI/CD: GitLab CI/CD with SonarQube for code quality
+Frontend: React.js
+
+Backend: Spring Boot (Java)
+
+Database: MySQLData 
+
+Ingestion: Python
+
+Containerization: Docker, Docker Compose
+
+CI/CD: GitLab CI/CD with SonarQube for code quality
 
 # 🚀 Features
 
 📊 Real-time visualization of employment & housing trends in Toronto-Hamilton
+
 🏗️ Tracks unemployment rates, participation rates, housing starts & completions
+
 📥 Python-based data ingestion pipeline with scheduled updates
+
 🧪 Linting and testing via GitLab pipelines
+
 📦 Fully containerized setup with isolated services for backend, frontend, database, and ingester
 
 # 🛠️ Local Development Setup
@@ -44,11 +58,17 @@ GitLab CI/CD is configured for linting and static analysis:
 # 🗃️ Folder Structure
 
 ├── backend                # Spring Boot app
+
 ├── data_ingester         # Python data ingestion scripts
+
 ├── frontend              # React frontend
+
 ├── output                # Output directory for ingested data
+
 ├── compose.yaml          # Docker Compose config
+
 ├── .gitlab-ci.yml        # CI/CD config
+
 └── README.md             # Project overview
 
 # ✨ Contributions
@@ -58,6 +78,7 @@ Open to collaboration! If you’d like to contribute, please fork the repo and c
 # 🙌 Acknowledgements
 
 City of Toronto & Hamilton Open Data Portals
+
 University of Guelph, CIS3760 Sheltrix Project Team
 
 📄 License
