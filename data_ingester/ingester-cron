@@ -1,0 +1,4 @@
+# ingester-cron: runs the script every 24 hours
+0 0 * * * root python3 /usr/app/updateIngester.py >> /var/log/cron.log 2>&1
+
+# An empty line is required at the end of this file for a valid cron file.

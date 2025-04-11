@@ -1,0 +1,148 @@
+variables:
+  SONAR_HOST_URL: "https://sonarqube.socs.uoguelph.ca"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  SONAR_BACKEND_TOKEN: "sqp_de966a7677f64081bf302a134f00c39ef135c70b"
+  SONAR_FRONTEND_TOKEN: "sqp_91123c248dfaf006a6b74639349bbc355c5e827e"
+  SONAR_INGESTER_TOKEN: "sqp_5827d63464ccd91bbe14ce6c3f48d467be7d1128"     # you'll need another token for the fetcher
+
+stages:
+  - build
+  - lint
+  - test
+  - sonar_analysis
+
+# BUILD STAGE
+build-backend:
+  stage: build
+  image: gradle:7.5-jdk17
+  script:
+    - cd backend
+    - gradle clean build -x test -x check
+  rules:
+    - when: always
+  allow_failure: false
+
+# LINT STAGE
+
+lint-backend:
+  stage: lint
+  image: gradle:7.5-jdk17
+  script:
+    - cd backend
+    - gradle check
+  rules:
+    - when: always
+  allow_failure: false
+
+lint-frontend:
+  stage: lint
+  image: node:22
+  script: 
+    - cd frontend
+    - npm install
+    - npx eslint . 
+  rules:
+    - when: always
+  allow_failure: false
+
+lint-ingestor:
+  stage: lint
+  image: python:3.11-slim  
+  script:
+  - pip install pylint
+  - cd data_ingester
+  - apt-get update && apt-get install -y unixodbc unixodbc-dev odbcinst libmariadb-dev odbc-mariadb
+  - pip install -r linter.txt
+  - apt-get update && apt-get install -y netcat-openbsd
+  - pylint . || true
+  rules:
+  - when: always
+  allow_failure: false
+
+
+  # TEST STAGE
+
+# test-backend:
+#   stage: test
+#   image: gradle:7.5-jdk17
+#   script:
+#     - echo "Running backend tests..."
+#     - cd backend
+#     - ./gradlew test
+#   rules:
+#    - when: always
+#   allow_failure: false
+
+# test-frontend:
+#   image: node:22
+#   script:
+#    - cd frontend
+#     - npm install
+#     - npm test
+#   rules:
+#    - when: always
+#   allow_failure: false
+
+# ingestertest:
+#   stage: test
+#   image: python:3.11-slim
+#   before_script:
+#     - pip install --upgrade pip
+#     - cd data_ingester
+#     - pip install -r requirements.txt
+#   script:
+#     - cd tests
+#     - pytest --junitxml=report.xml
+#   artifacts:
+#     when: always
+#     reports:
+#       junit: data_ingester/tests/report.xml
+#     paths:
+#       - data_ingester/tests/report.xml
+
+
+
+# SONAR ANALYSIS STAGE
+
+sonar_analysis_backend:
+  image: gradle:8.2.0-jdk17-jammy
+  stage: sonar_analysis
+  script:
+    - cd backend
+    - gradle build -x checkstyleMain -x checkstyleTest sonar -Dsonar.login=$SONAR_BACKEND_TOKEN  # must build because sonar needs binaries for parts of the analysis
+  allow_failure: true
+  only:
+    - main  
+
+sonar_analysis_frontend:
+  image: sonarsource/sonar-scanner-cli:latest
+  stage: sonar_analysis
+  script:
+    - cd frontend
+    - npm install  # Install project dependencies
+    - npm run build  # Compile TypeScript to JavaScript
+    - sonar-scanner 
+        -Dsonar.projectKey=sheltrix_frontend
+        -Dsonar.sources=. 
+        -Dsonar.host.url=$SONAR_HOST_URL 
+        -Dsonar.login=$SONAR_FRONTEND_TOKEN
+        -Dsonar.qualitygate.wait=true
+  allow_failure: true
+  only:
+    - main
+
+sonar_analysis_ingester:
+  image: sonarsource/sonar-scanner-cli:latest
+  stage: sonar_analysis
+  script:
+    - cd data_ingester
+    - sonar-scanner 
+        -Dsonar.projectKey=sheltrix_ingester
+        -Dsonar.sources=. 
+        -Dsonar.host.url=$SONAR_HOST_URL 
+        -Dsonar.login=$SONAR_INGESTER_TOKEN
+        -Dsonar.qualitygate.wait=true
+  allow_failure: true
+  only:
+    - main

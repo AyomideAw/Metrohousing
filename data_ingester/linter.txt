@@ -1,0 +1,13 @@
+# Required dependencies
+
+# Linter (using pylint)
+pylint==3.2.3   # Fairly recent version of pylint.
+
+# Pyodbc to handle database interactions
+pyodbc==5.1.0
+
+# Add any other dependencies needed here.
+requests==2.32.2
+jsons==1.6.2
+
+#tabulate ==0.9.0
